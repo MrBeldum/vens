@@ -41,19 +41,20 @@ The two are not mutually exclusive: you can use Vens to rank, triage the top N, 
 
 They answer different questions. vexllm answers "should I hide this CVE?"; Vens answers "how urgent is it compared to the others?". vexllm is now archived and unmaintained: for anything you set up today Vens is the maintained path, and if you need a prioritized patch queue and CI gating by contextual risk it is also the closer fit.
 
-
 ---
 
-## SSVC and other free prioritizers
+## SSVC and other non-LLM prioritizers
 
-**[SSVC](https://github.com/CERTCC/SSVC)** (Stakeholder-Specific Vulnerability Categorization) prioritises a vulnerability from a short set of questions about exposure and mission impact. It is free, standardised, and needs no model.
+**[SSVC](https://certcc.github.io/SSVC/)** (Stakeholder-Specific Vulnerability Categorization) is a methodology that maps a short set of questions about exposure and mission impact onto a fixed decision table. It is free, needs no model, and — once the decision table is defined — can be entirely automated ([CERT/CC docs](https://certcc.github.io/SSVC/topics/ssvc-human-scale-bottleneck/)). Exposure and mission answers are gathered once and reused, the same way Vens reuses a context file.
 
-- **SSVC asks a human per vulnerability.** An analyst answers the decision tree for each CVE; the outcome scales with analyst time.
-- **Vens answers from a context file written once.** The same `config.yaml` is reused across a whole scanner run, so cost scales with the scan rather than with one-by-one interviews.
+The real difference is the output shape:
 
-Use SSVC when you want a transparent, human-authored decision for a small set of findings. Use Vens when you need contextual ranking across hundreds of CVEs without re-answering a questionnaire for each one.
+- **SSVC lands on Defer / Scheduled / Out-of-Cycle / Immediate** off that fixed table.
+- **Vens emits a continuous contextual score** from a `config.yaml` written once and reused across a whole scanner run.
 
-**[CVE_Prioritizer](https://github.com/TURROKS/CVE_Prioritizer)** combines CVSS, EPSS and CISA KEV into a single ranking with no deployment context required. That is a strong generic signal and a useful baseline; Vens sits beside it when you also have system-specific context the CVSS/EPSS/KEV triple cannot see.
+Use SSVC when you want a transparent, table-driven decision category. Use Vens when you need a scored ranking across hundreds of CVEs.
+
+**[CVE_Prioritizer](https://github.com/TURROKS/CVE_Prioritizer)** combines CVSS, EPSS and CISA KEV into priority buckets (`Priority 1+` through `Priority 4`) with no deployment context required. That is a strong generic signal and a useful baseline; Vens sits beside it when you also have system-specific context the CVSS/EPSS/KEV triple cannot see.
 
 ---
 
@@ -101,10 +102,10 @@ Grype,     │     ┌── vexllm
      │     │         "Assert status per CVE, by a human, signed"
      │     │
      │     ├── SSVC
-     │     │   "Human answers exposure/mission questions per CVE"
+     │     │   "Defer/Scheduled/Out-of-Cycle/Immediate from a fixed table"
      │     │
      │     ├── CVE_Prioritizer
-     │     │   "Rank by CVSS + EPSS + KEV, no context file"
+     │     │   "Bucket by CVSS + EPSS + KEV, no context file"
      │     │
      │     └── Dependency-Track, OpenCVE, DefectDojo, …
      │         "Track CVEs over time, run policy, aggregate reports"
